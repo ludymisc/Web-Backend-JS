@@ -1,0 +1,36 @@
+generator client {
+  provider = "prisma-client"
+  output   = "../generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model galleries {
+  id      Int   @id @default(autoincrement())
+  user_id Int
+  note_id Int
+  notes   notes @relation(fields: [note_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  users   users @relation(fields: [user_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+}
+
+model notes {
+  id        Int         @id @default(autoincrement())
+  title     String
+  contents  String?
+  galleries galleries[]
+}
+
+model users {
+  id                     Int         @id @default(autoincrement())
+  username               String
+  email_adress           String      @unique
+  password               String
+  created_at             DateTime    @default(now()) @db.Timestamp(6)
+  role                   String?     @default("user") @db.VarChar(50)
+  password_changed_at    DateTime?   @db.Timestamp(6)
+  reset_password_token   String?
+  reset_password_expires DateTime?   @db.Timestamp(6)
+  galleries              galleries[]
+}
