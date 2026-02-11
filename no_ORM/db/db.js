@@ -17,4 +17,8 @@ if (!process.env.DB_PASSWORD) {
   throw new Error("DB_PASSWORD is missing in .env");
 }
 
+if (!pool) {
+  throw new Error('test aja')
+}
+
 export default pool;
