@@ -4,6 +4,7 @@ import jwt from 'jsonwebtoken'; //buat import web token
 import KurirPaket from '../services/kurirPaket.js';
 import crypto from "crypto";
 import {prisma} from '../../lib/prisma.js'
+import { useTransition } from 'react';
 
 //register page api endpoint
 export const register = async(req, res) => { //router post untuk input data ke database biasanya.
@@ -156,18 +157,24 @@ export const forgotPassword = async(req, res) => {
             return res.status(400).json({ message: "all field required" })
         }
 
-        await pool.query(
-            'UPDATE users SET reset_password_token = $1, reset_password_expires = $2 WHERE email_adress = $3',
-            [hashedToken, expires, email]
-        )
+        await prisma.users.update({
+            data:{
+                reset_password_token: hashedToken,
+                reset_password_expires: expires,
+            },
+            where:{
+                email_adress: email
+            }
+        })
         
         const resetLink = `http://localhost:3000/api/forgot-password?token=${resetToken}`
-        await KurirPaket(email, resetLink)
+        const resetTokenOnly = resetLink
+        await KurirPaket(email, resetLink, resetTokenOnly)
         res.json({ message: "jika email ada, kamu akan menerimanya sebentar lagi" })
     } catch (error) {
         res.status(500).json({ message: "server error, cek log" })
         console.error(error)
-    }
+}
 }
 
 //reset password end point
@@ -177,16 +184,19 @@ export const resetPassword = async(req, res) => {
 
         const hashedToken = crypto.createHash("sha256").update(token).digest("hex")
 
-        const { rows } = await pool.query(
-            `SELECT id FROM users
-            WHERE reset_password_token = $1
-            AND
-            reset_password_expires > NOW()`,
-            
-            [hashedToken]
-        )
+        const user = await prisma.users.findFirst({
+            where:{
+                reset_password_token: hashedToken,
+                reset_password_expires: {
+                    gt: new Date()
+                }
+            },
+            select: {
+                id: true
+            }
+        })
 
-        if (rows.length === 0){
+        if (!user){
             return res.status(400).json({ message: "token invalid/expired" })
         }
 
@@ -194,16 +204,19 @@ export const resetPassword = async(req, res) => {
             return res.status(400).json({ message: "token dan password wajib ada" });
         }
 
-        const id = rows[0].id
+        const id = user.id
         const hashedPassword = await bcrypt.hash(newPassword, 10)
 
-        await pool.query(
-            `UPDATE users SET password = $1,
-            reset_password_token = NULL,
-            reset_password_expires = NULL
-            WHERE id = $2`,
-            [hashedPassword, id]
-        )
+        await prisma.users.updateMany({
+            data: {
+                reset_password_token: null,
+                reset_password_expires: null,
+                password: hashedPassword
+            },
+            where: {
+                id: id
+            }
+        })
 
         res.status(200).json({ message: "password telah berubah, harap relog"})
     } catch(error) {

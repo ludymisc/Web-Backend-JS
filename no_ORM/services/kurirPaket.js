@@ -20,7 +20,7 @@ async function KurirPaket(email, resetLink) { //fungsi menerima email tujuan dan
         subject: "Reset Password",
         text: `Klik link ini untuk reset password:
     ${resetLink}
-    
+    ini tokennya, kalo gabisa klik link: ${resetTokenOnly}
     Link berlaku 15 menit.`,
     });
 } export default KurirPaket
