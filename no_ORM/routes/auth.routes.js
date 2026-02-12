@@ -19,8 +19,8 @@ const router = Router();
 
 router.post('/register', register);
 router.post('/login', loginLimiter, login);
-router.post('/change-password', AuthLoginToken, passwordChangeLimiter, changePassword);
+router.patch('/change-password', AuthLoginToken, passwordChangeLimiter, changePassword);
 router.post('/forgot-password', passwordChangeLimiter, forgotPassword);
-router.post('/reset-password', resetPassword);
+router.patch('/reset-password', resetPassword);
 
 export default router

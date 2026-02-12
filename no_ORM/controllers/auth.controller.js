@@ -3,6 +3,7 @@ import pool from '../db/db.js'; //ini ngambil variabel pool dari db js tadi
 import jwt from 'jsonwebtoken'; //buat import web token 
 import KurirPaket from '../services/kurirPaket.js';
 import crypto from "crypto";
+import {prisma} from '../../lib/prisma.js'
 
 //register page api endpoint
 export const register = async(req, res) => { //router post untuk input data ke database biasanya.
@@ -15,18 +16,29 @@ export const register = async(req, res) => { //router post untuk input data ke d
         
         const hashedPassword = await bcrypt.hash(password, 10)
 
-        const result = await pool.query(
-            'INSERT INTO users (username, email_adress, password) VALUES ($1, $2, $3) RETURNING id, username, email_adress',
-            [username, email, hashedPassword]
-        )
-            
+        // const results = await pool.query(
+        //     'INSERT INTO users (username, email_adress, password) VALUES ($1, $2, $3) RETURNING id, username, email_adress',
+        //     [username, email, hashedPassword]
+        // )
 
-        res.status(201).json({ user: result.rows[0]});
+        const result = await prisma.users.create({
+            data: {
+                username: username,
+                email_adress: email,
+                password: hashedPassword
+            },
+        })
+
+        res.status(201).json({ 
+            message: "created, you can login now",
+            id: result.id,
+            username: result.username,
+            email: result.email_adress });
     } catch (error) {
         if (error.code === '23505') {
-            res.status(400).json({ message: 'Email Already Exist'})
+            res.status(400).json({ 
+                message: 'Email Already Exist'})
         }
-
         console.error(error);
         res.status(500).json({ message: 'Server Error'});
     }
@@ -34,24 +46,24 @@ export const register = async(req, res) => { //router post untuk input data ke d
 
 //login page api endpoint
 export const login = async (req, res) => {
-    const { username, password } = req.body;
+    const { email, password } = req.body;
 
     try {
-        if (!username || !password) {
+        if (!email || !password) {
             return res.status(400).json({ message: 'All fields are required!'});
         }
 
-        const result = await pool.query(
-            'SELECT id, username, password FROM users WHERE username = $1',
-            [username]
-        )
+        const result = await prisma.users.findUnique({
+            where: {
+                email_adress: email
+            }
+        });
 
-        if (result.rows.length === 0) {
-            return res.status(400).json({ message: 'Invalid credentials'});
+        if (!result) {
+            return res.status(404).json({ message: 'User not Found'});
         }
 
-        const user = result.rows[0];
-        const isPasswordValid = await bcrypt.compare(password, user.password);
+        const isPasswordValid = await bcrypt.compare(password, result.password);
 
         if (!isPasswordValid) {
             return res.status(400).json({ message: 'Invalid credentials'});
@@ -59,8 +71,8 @@ export const login = async (req, res) => {
 
         const token = jwt.sign(
             {
-                id: user.id,
-                username: user.username
+                id: result.id,
+                username: result.username
             },
             process.env.JWT_SECRET,
             { expiresIn: '1h' }
@@ -70,8 +82,8 @@ export const login = async (req, res) => {
             message: 'Login successful',
             token: token,
             user: {
-                user_id: user.id,
-                username: user.username
+                user_id: result.id,
+                username: result.username
             }
         });
         
@@ -91,16 +103,20 @@ export const changePassword = async(req,res) => {
             return res.status(400).json({ message: "ada kolom yang kosong, harap di isi" })
         }
 
-        const oldPassword = await pool.query(
-            'SELECT password FROM users WHERE id=$1',
-            [id]
-        )
+        const oldPassword = await prisma.users.findUnique({
+            where: {
+                id: id 
+            },
+            select: {
+                password: true
+            }
+        })
 
-        if(oldPassword.rowCount === 0){
+        if(!oldPassword){
             return res.status(404).json({ message: "user tidak ditemukan" })
         }
 
-        const oldHashedPasswordFromDB = oldPassword.rows[0].password
+        const oldHashedPasswordFromDB = oldPassword.password
 
         //validate password sama dengan di db, kalo beda, return 401
         const isOldPasswordMatch = await bcrypt.compare(password, oldHashedPasswordFromDB)
@@ -111,10 +127,15 @@ export const changePassword = async(req,res) => {
 
         const hashedNewPassword = await bcrypt.hash(newPassword, 10)
 
-        await pool.query(
-            'UPDATE users SET password = $1, password_changed_at = NOW() WHERE id = $2',
-            [hashedNewPassword, id]
-        )
+        await prisma.users.update({
+            where:{
+                id: id
+            },
+            data:{
+                password: hashedNewPassword,
+                password_changed_at: new Date()
+            }
+        })
     res.status(200).json({ message: "password telah diubah, harap login kembali" })
     } catch (error) {
         console.error(error)
