@@ -1,10 +1,8 @@
 import bcrypt from 'bcrypt'; //ini buat enkripsi data di database
-import pool from '../db/db.js'; //ini ngambil variabel pool dari db js tadi
 import jwt from 'jsonwebtoken'; //buat import web token 
 import KurirPaket from '../services/kurirPaket.js';
 import crypto from "crypto";
 import {prisma} from '../../lib/prisma.js'
-import { useTransition } from 'react';
 
 //register page api endpoint
 export const register = async(req, res) => { //router post untuk input data ke database biasanya.

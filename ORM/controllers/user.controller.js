@@ -1,22 +1,28 @@
-import pool from "../db/db.js";
+import {prisma} from '../../lib/prisma.js'
 
 //end point route for user info
 export const getMe = async (req, res) => {
     try {
         const userId = req.user.id;
-        console.log(req.user)
 
-        const result = await pool.query(
-            "SELECT id, username FROM users WHERE id = $1",
-            [userId]
-        );
+        const getMe = await prisma.users.findUnique({
+            where: {
+                id: userId
+            },
+            select: {
+                id: true,
+                username: true,
+                role: true
+            }
+        });
 
-        if (result.rows.length === 0) {
+        if (!getMe) {
             return res.status(404).json({ message: "User not found" });
         }
 
-        res.status(200).json({ user: result.rows[0] });
+        res.status(200).json({ user: getMe });
     } catch (error) {
+        console.error(error)
         res.status(500).json({ message: "Server error" });
     }
 }
@@ -28,17 +34,21 @@ export const changeRole = async(req, res) => {
         const { role } = req.body;
 
         if(!['admin', 'user'].includes(role)) {
-            res.status(400).json({ message: "role tidak valid" })
+            return res.status(400).json({ message: "role tidak valid" })
         }
 
         if(Number(id) === req.user.id) {
-            res.status(400).json({ message: "gak bisa mengubah role sendiri, admin bloon" })
+            return res.status(400).json({ message: "gak bisa mengubah role sendiri, admin bloon" })
         }
 
-        await pool.query(
-            'UPDATE users SET role = $1 WHERE id = $2',
-            [role, id]
-        )
+        await prisma.users.update({
+            data: {
+                role: role
+            },
+            where: {
+                id: id
+            }
+        })
 
         res.json({ message: "role telah berubah, cek aja kalo gak percaya" })
     } catch (error){
