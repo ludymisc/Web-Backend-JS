@@ -1,7 +1,7 @@
 import bcrypt from 'bcrypt'; //ini buat enkripsi data di database
 import pool from '../db/db.js'; //ini ngambil variabel pool dari db js tadi
 import jwt from 'jsonwebtoken'; //buat import web token 
-import KurirPaket from '../services/kurirPaket.js';
+import KurirPaket from '../services/kurirPaket.js'; //ini fungsi yang akan mengirimkan email token reset password
 import crypto from "crypto";
 
 //register page api endpoint
