@@ -1,0 +1,25 @@
+ini adalah file panduan untuik pemula dalam membuat backend.
+
+1. brainstorming konsep
+tentu saja brain storming, apa yang akan dibuat, stack apa yang akan digunakan 
+dan mencari referensi terkait.
+
+2. membuat database
+setelah memutusan stack apa yang akan digunakan, selanjutnya adalah membuat tabel database
+apa saja yang akan dibutuhkan, misalnya username, password, tabel produk, dan lainnya
+
+3. inisialisasi backend
+disini gw menggunakan backend node.js dan express sebagai babu parser API
+
+```bash
+npm init -y
+npm i express pg
+```
+
+4. membuat file server/app
+isinya kurang lebih adalah origin dan app.user(express.json)
+sertakan route seperti /api atau /auth, sesuai preferensi kalian
+tambahkan route untuk testing, contoh: "/test", test dengan menjalankan server
+lalu buka localhost kalian dan cek route tersebut
+
+selesai. backend siap dikembangkan 

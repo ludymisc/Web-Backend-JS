@@ -18,6 +18,9 @@ app.use(cookieParser());
 app.get('/test', (req, res) => {
     res.json('OK!, server for db is running perfectly'); //akan muncul di route domian localhost:port/test
 }) //testing server dan endpoint 
+app.get('/', (req, res) => {
+    res.json('Hello, World!'); //akan muncul di route domian localhost:port/test
+}) //testing server dan endpoint 
 
 app.listen(3000, () =>{
     console.log("server running on port 3000") //akan muncul di terminal jika node aktif dan server nyala
