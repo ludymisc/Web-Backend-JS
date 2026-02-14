@@ -3,6 +3,7 @@ import authRoutes from '../routes/auth.routes.js'; //memperpendek route api
 import userRoutes from '../routes/user.routes.js'
 import dotenv from 'dotenv' //biar bisa baca file dotenv
 import { globalLimiter } from '../services/rateLimiter.js'
+import cookieParser from 'cookie-parser'
 
 dotenv.config({ path: "../server/.env"}) //biar bisa baca config file dotenv
 
@@ -12,6 +13,7 @@ app.use(express.json()); //parser data json
 app.use('/api', authRoutes); //routing semua endpoint dengan prefix /api
 app.use('/api', userRoutes); //routing semua endpoint dengan prefix /api
 app.use(globalLimiter);
+app.use(cookieParser());
 
 app.get('/test', (req, res) => {
     res.json('OK!, server for db is running perfectly'); //akan muncul di route domian localhost:port/test
