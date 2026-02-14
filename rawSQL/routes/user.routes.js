@@ -5,9 +5,9 @@ import {
     changeRole
 } from '../controllers/user.controller.js';
 
-import AuthLoginToken from '../services/authLoginToken.js';
+import AuthLoginToken from '../middleware/authLoginToken.js';
 
-import IsAdmin from '../services/isAdmin.js';
+import IsAdmin from '../middleware/isAdmin.js';
 
 const router = Router()
 

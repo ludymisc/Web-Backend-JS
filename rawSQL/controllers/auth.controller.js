@@ -66,15 +66,21 @@ export const login = async (req, res) => {
             { expiresIn: '1h' }
         )
 
+        
+        res.cookie("token", token, {
+            httpOnly: true,
+            secure: false,
+            sameSite: "strict",
+            maxAge: 24 * 60 * 60 * 1000
+        });
+        
         res.status(200).json({ 
             message: 'Login successful',
-            token: token,
             user: {
                 user_id: user.id,
                 username: user.username
             }
         });
-        
     } catch (error) {
         console.error(error);
         res.status(500).json({ message: 'Server Error'});

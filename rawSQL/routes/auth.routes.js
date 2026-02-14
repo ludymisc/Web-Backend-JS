@@ -11,9 +11,9 @@ import {
 import {
     loginLimiter,
     passwordChangeLimiter
-} from '../services/rateLimiter.js';
+} from '../middleware/rateLimiter.js';
 
-import AuthLoginToken from '../services/authLoginToken.js';
+import AuthLoginToken from '../middleware/authLoginToken.js';
 
 const router = Router();
 

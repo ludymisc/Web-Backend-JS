@@ -2,7 +2,7 @@ import express from 'express'; //api serveice untuk backend javaScript
 import authRoutes from '../routes/auth.routes.js'; //memperpendek route api
 import userRoutes from '../routes/user.routes.js'
 import dotenv from 'dotenv' //biar bisa baca file dotenv
-import { globalLimiter } from '../services/rateLimiter.js'
+import { globalLimiter } from '../middleware/rateLimiter.js'
 import cookieParser from 'cookie-parser'
 
 dotenv.config({ path: "../server/.env"}) //biar bisa baca config file dotenv
