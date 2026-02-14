@@ -23,3 +23,7 @@ tambahkan route untuk testing, contoh: "/test", test dengan menjalankan server
 lalu buka localhost kalian dan cek route tersebut
 
 selesai. backend siap dikembangkan 
+
+
+alur belajar dari project ini:
+server > db > controller > routes > middleware & services
